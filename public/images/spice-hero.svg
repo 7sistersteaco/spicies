@@ -1,0 +1,10 @@
+<svg width="520" height="360" viewBox="0 0 520 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="520" height="360" fill="none"/>
+  <g stroke="#D4AF37" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M110 210c0 50 60 90 150 90s150-40 150-90"/>
+    <path d="M140 190h240"/>
+    <path d="M180 130c20 12 40 12 60 0"/>
+    <path d="M260 120c20 12 40 12 60 0"/>
+  </g>
+  <text x="80" y="350" fill="#F6F1E8" font-size="18" font-family="Poppins, sans-serif" letter-spacing="3">ASSAM SPICES</text>
+</svg>

@@ -1,0 +1,10 @@
+<svg width="520" height="360" viewBox="0 0 520 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="520" height="360" fill="none"/>
+  <g stroke="#D4AF37" stroke-width="3" stroke-linecap="round">
+    <path d="M120 210h200c30 0 54-24 54-54v-70H66v70c0 30 24 54 54 54z"/>
+    <path d="M374 100h30c26 0 48 22 48 48s-22 48-48 48h-30"/>
+    <path d="M170 72c0-18 12-32 30-46"/>
+    <path d="M240 60c0-22 14-38 36-52"/>
+  </g>
+  <text x="60" y="330" fill="#F6F1E8" font-size="18" font-family="Poppins, sans-serif" letter-spacing="3">ASSAM CTC TEA</text>
+</svg>

@@ -1,0 +1,12 @@
+<svg width="900" height="700" viewBox="0 0 900 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="900" height="700" fill="none"/>
+  <g stroke="#D4AF37" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M260 420h300c40 0 72-32 72-72v-110h-444v110c0 40 32 72 72 72z"/>
+    <path d="M632 250h38c32 0 58 26 58 58s-26 58-58 58h-38"/>
+    <path d="M350 210c0-24 16-42 40-60"/>
+    <path d="M420 200c0-30 18-52 50-70"/>
+    <path d="M500 210c0-24 16-42 40-60"/>
+  </g>
+  <text x="120" y="560" fill="#D4AF37" font-size="32" font-family="Playfair Display, serif" letter-spacing="2">Assam Tea &amp; Spices</text>
+  <text x="120" y="600" fill="#F6F1E8" font-size="14" font-family="Poppins, sans-serif" letter-spacing="4">FROM RESTRO TO HOME</text>
+</svg>

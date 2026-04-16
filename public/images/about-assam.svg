@@ -1,0 +1,9 @@
+<svg width="640" height="420" viewBox="0 0 640 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="420" fill="none"/>
+  <g stroke="#D4AF37" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M140 300c60-80 120-120 180-120s120 40 180 120"/>
+    <path d="M200 260c40-50 80-75 120-75s80 25 120 75"/>
+    <path d="M260 230c20-30 40-45 60-45s40 15 60 45"/>
+  </g>
+  <text x="150" y="350" fill="#F6F1E8" font-size="18" font-family="Poppins, sans-serif" letter-spacing="3">BARPETA ROAD, ASSAM</text>
+</svg>
