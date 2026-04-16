@@ -15,11 +15,13 @@ WHERE NOT EXISTS (SELECT 1 FROM branding_settings WHERE id = 1);
 ALTER TABLE branding_settings ENABLE ROW LEVEL SECURITY;
 
 -- Policy to allow anyone to read
+DROP POLICY IF EXISTS "Allow public read branding_settings" ON branding_settings;
 CREATE POLICY "Allow public read branding_settings" 
 ON branding_settings FOR SELECT 
 USING (true);
 
 -- Policy to allow service role to manage
+DROP POLICY IF EXISTS "Allow service_role manage branding_settings" ON branding_settings;
 CREATE POLICY "Allow service_role manage branding_settings" 
 ON branding_settings FOR ALL 
 USING (true)
