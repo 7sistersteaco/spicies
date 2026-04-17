@@ -14,13 +14,16 @@ import { formatPrice } from '@/lib/products/helpers';
 export default function ProductPurchase({ product }: { product: Product }) {
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
-  const [selectedId, setSelectedId] = useState(product.variants[0]?.id ?? '');
+  
+  const activeVariants = useMemo(() => product.variants.filter(v => v.isActive), [product.variants]);
+  
+  const [selectedId, setSelectedId] = useState(activeVariants[0]?.id ?? '');
   const [quantity, setQuantity] = useState(1);
   const [variantError, setVariantError] = useState('');
 
   const activeVariant = useMemo(
-    () => product.variants.find((variant) => variant.id === selectedId) ?? product.variants[0],
-    [product.variants, selectedId]
+    () => activeVariants.find((variant) => variant.id === selectedId) ?? activeVariants[0],
+    [activeVariants, selectedId]
   );
 
   useEffect(() => {
@@ -30,14 +33,14 @@ export default function ProductPurchase({ product }: { product: Product }) {
   }, [product.variants, selectedId]);
 
   useEffect(() => {
-    if (product.variants.length === 0) {
+    if (activeVariants.length === 0) {
       setVariantError('This product is temporarily unavailable.');
     } else if (!activeVariant) {
       setVariantError('Please select a weight to continue.');
     } else {
       setVariantError('');
     }
-  }, [activeVariant, product.variants.length]);
+  }, [activeVariant, activeVariants.length]);
 
   if (!activeVariant) {
     return (
@@ -52,8 +55,10 @@ export default function ProductPurchase({ product }: { product: Product }) {
     router.push('/checkout');
   };
 
-  const isPrebook = product.inventoryStatus === 'prebook_only';
-  const isOutOfStock = product.inventoryStatus === 'out_of_stock';
+  const LAUNCH_DATE = new Date('2026-06-04');
+  const isGlobalPreOrder = new Date() < LAUNCH_DATE;
+  const isPrebook = isGlobalPreOrder || product.inventoryStatus === 'prebook_only';
+  const isOutOfStock = product.inventoryStatus === 'out_of_stock' || activeVariant.stockQty <= 0;
 
   return (
     <div className="space-y-6">
@@ -63,7 +68,7 @@ export default function ProductPurchase({ product }: { product: Product }) {
           <p className="text-sm text-cream/80">{formatPrice(activeVariant.priceInr)}</p>
         </div>
         <div className="mt-4">
-          <WeightSelector variants={product.variants} selectedId={activeVariant.id} onSelect={setSelectedId} />
+          <WeightSelector variants={activeVariants} selectedId={activeVariant.id} onSelect={setSelectedId} />
         </div>
         <div className="mt-6 flex items-center justify-between">
           <p className="text-xs uppercase tracking-[0.3em] text-cream/50">Quantity</p>
@@ -72,23 +77,28 @@ export default function ProductPurchase({ product }: { product: Product }) {
 
         <div className="mt-8">
           {isOutOfStock ? (
-            <Button disabled className="w-full bg-cream/5 text-cream/30 border-white/5 cursor-not-allowed">
-              Sold Out
-            </Button>
+            <div className="space-y-4">
+              <Button disabled className="w-full bg-cream/5 text-cream/20 border-white/5 cursor-not-allowed">
+                Sold Out
+              </Button>
+              <p className="text-[10px] text-center text-accent/50 uppercase tracking-widest leading-relaxed">
+                This weight option is currently unavailable
+              </p>
+            </div>
           ) : isPrebook ? (
             <div className="space-y-4">
                <Button 
                 variant="secondary" 
-                className="w-full py-4 text-accent border-accent/30 hover:bg-accent/10" 
+                className="w-full py-4 text-accent border-accent/20 hover:bg-accent/5" 
                 onClick={() => {
                   const el = document.getElementById('prebook-section');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }}
               >
-                Reserve / Pre-order Now
+                Pre-order Now
               </Button>
               <p className="text-[10px] text-center text-cream/40 uppercase tracking-widest leading-relaxed">
-                Limited Batch • Reserve to Secure Availability
+                Pre-orders open • Dispatch begins June 4
               </p>
             </div>
           ) : (
@@ -102,7 +112,7 @@ export default function ProductPurchase({ product }: { product: Product }) {
         </div>
 
         {variantError && <p className="mt-3 text-xs text-accent">{variantError}</p>}
-        {!isPrebook && !isOutOfStock && (
+        {!isPrebook && !isOutOfStock && activeVariant && (
            <p className="mt-4 text-xs text-cream/50">Secure checkout. Freshly packed from Assam.</p>
         )}
       </div>
@@ -111,12 +121,12 @@ export default function ProductPurchase({ product }: { product: Product }) {
         <div id="prebook-section" className="lux-surface p-6">
           <div className="space-y-2 mb-6">
              <h3 className="text-sm uppercase tracking-[0.3em] text-cream/70 font-semibold">
-               {isPrebook ? 'Exclusive Pre-order' : 'Prefer to reserve instead?'}
+               {isPrebook ? 'Exclusive Pre-order' : 'Confirm Your Order'}
              </h3>
              <p className="text-xs text-cream/50">
                {isPrebook 
-                 ? 'This product is currently in production. Reserve your pack now to ensure you get it from the next limited harvest.' 
-                 : 'Planning a large order or want to pay later? Use our reservation lead flow.'}
+                 ? 'This product is currently in production. Secure your pre-order now to guarantee delivery from the upcoming harvest.' 
+                 : 'Place a pre-order to secure your batch before our official launch.'}
              </p>
           </div>
           <PrebookForm product={product} variant="embedded" />

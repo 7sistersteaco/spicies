@@ -23,13 +23,13 @@ export async function POST(request: Request) {
     const productIds = payload.items.map((item) => item.productId);
     const { data: productsById, error } = await supabase
       .from('products')
-      .select('id,name,variants,slug')
+      .select('id,name,variants,product_variants(*),slug')
       .in('id', productIds);
 
     const { data: productsBySlug } =
       productsById && productsById.length === productIds.length
         ? { data: [] }
-        : await supabase.from('products').select('id,name,variants,slug').in('slug', productIds);
+        : await supabase.from('products').select('id,name,variants,product_variants(*),slug').in('slug', productIds);
 
     const products = [...(productsById ?? []), ...(productsBySlug ?? [])];
 

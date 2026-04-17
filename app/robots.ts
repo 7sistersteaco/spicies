@@ -1,13 +1,13 @@
 import { MetadataRoute } from 'next';
-import { siteConfig } from '@/lib/seo/metadata';
+import { siteConfig, buildUrl } from '@/lib/seo/metadata';
 
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/cart', '/checkout']
+      disallow: ['/admin', '/api', '/cart', '/checkout', '/account', '/order-success', '/*?*']
     },
-    sitemap: `${siteConfig.url}/sitemap.xml`
+    sitemap: buildUrl('/sitemap.xml')
   };
 }

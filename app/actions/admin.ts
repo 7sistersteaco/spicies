@@ -1,7 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { updatePrebookStatus } from '@/lib/prebook/queries';
 import type { PrebookStatus } from '@/lib/prebook/types';
 
@@ -17,8 +19,11 @@ export async function isAdmin() {
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) return false;
   
-  // You can add additional checks here, e.g., checking for an 'admin' role in a profiles table
-  return user.app_metadata?.role === 'admin';
+  const email = user.email || '';
+  const isAllowedDomain = email.endsWith('@7sisterstea.com') || email.endsWith('@gmail.com');
+  const hasAdminRole = user.app_metadata?.role === 'admin';
+
+  return hasAdminRole && isAllowedDomain;
 }
 
 export async function loginAdmin(_prevState: AdminLoginState, formData: FormData): Promise<AdminLoginState> {
@@ -60,4 +65,29 @@ export async function setPrebookStatus(formData: FormData) {
 
   await updatePrebookStatus(id, status);
   revalidatePath('/admin');
+}
+
+/**
+ * Invite a new user with administrative or staff roles
+ */
+export async function inviteNewUser(_prevState: any, formData: FormData): Promise<{ ok: boolean; message?: string; error?: string }> {
+  if (!(await isAdmin())) return { ok: false, error: 'Unauthorized' };
+
+  const email = String(formData.get('email') ?? '').trim();
+  const role = String(formData.get('role') ?? 'staff').trim();
+  const fullName = String(formData.get('full_name') ?? '').trim();
+
+  if (!email || !fullName) return { ok: false, error: 'Email and full name required.' };
+
+  const origin = headers().get('origin');
+  const adminSupabase = createAdminClient();
+  
+  const { data, error } = await adminSupabase.auth.admin.inviteUserByEmail(email, {
+    data: { role, full_name: fullName },
+    redirectTo: `${origin}/api/auth/callback`,
+  });
+
+  if (error) return { ok: false, error: error.message };
+
+  return { ok: true, message: `Invitation successfully sent to ${email}!` };
 }

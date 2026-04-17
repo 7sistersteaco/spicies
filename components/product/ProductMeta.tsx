@@ -2,9 +2,10 @@ import { Product } from '@/lib/products/types';
 import { formatPrice } from '@/lib/products/helpers';
 
 export default function ProductMeta({ product }: { product: Product }) {
-  const prices = product.variants.map((variant) => variant.priceInr);
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
+  const activeVariants = product.variants.filter((v) => v.isActive);
+  const prices = activeVariants.map((variant) => variant.priceInr);
+  const min = prices.length > 0 ? Math.min(...prices) : 0;
+  const max = prices.length > 0 ? Math.max(...prices) : 0;
   return (
     <div className="space-y-4">
       <p className="text-xs uppercase tracking-[0.4em] text-cream/50">{product.category}</p>

@@ -9,6 +9,8 @@ import { signOutUser } from '@/app/actions/auth';
 import type { User } from '@supabase/supabase-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WHATSAPP_NUMBER } from '@/lib/config/whatsapp';
+import { cx, getSafeImage, isValidImageUrl } from '@/lib/utils';
+import SafeImage from '@/components/ui/SafeImage';
 
 // --- Icons ---
 const BagIcon = ({ className }: { className?: string }) => (
@@ -46,8 +48,8 @@ const UserIcon = () => (
   </svg>
 );
 
-const LogoutIcon = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+const LogoutIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className ?? 'h-5 w-5'}>
     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
     <polyline points="16 17 21 12 16 7" />
     <line x1="21" y1="12" x2="9" y2="12" />
@@ -92,7 +94,7 @@ export default function SiteHeader({
   branding 
 }: { 
   user: User | null;
-  branding: { logo_url: string | null; favicon_url: string | null };
+  branding: { logo_url: string | null; favicon_url: string | null; hero_image_url: string | null; banner_image_url: string | null };
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -108,19 +110,31 @@ export default function SiteHeader({
   return (
     <header className="sticky top-0 z-50 border-b border-white/5 bg-ink/90 backdrop-blur">
       <div className="section-pad mx-auto flex h-20 max-w-[96rem] 2xl:max-w-[104rem] items-center justify-between font-sans">
-        <Link href="/" className="flex items-center gap-3 font-semibold group h-full">
-          {branding.logo_url ? (
-            <div className="relative h-12 w-48 transition-transform group-hover:scale-[1.02]">
-              <Image 
-                src={branding.logo_url} 
-                alt="7 Sisters Tea Co." 
-                fill 
-                className="object-contain object-left"
-                priority
-              />
+        <Link href="/" className="flex items-center gap-2 font-semibold group h-full">
+          {isValidImageUrl(branding.logo_url) ? (
+            /* Symbol icon uploaded — show icon + brand name side by side */
+            <div className="flex items-center gap-3 transition-transform group-hover:scale-[1.01]">
+              <div className="relative h-9 w-9 shrink-0">
+                <SafeImage
+                  src={branding.logo_url}
+                  fallback="/images/logo-mark.svg"
+                  alt="7 Sisters Tea Co."
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+              <span className="font-heading text-[19px] md:text-[22px] tracking-[0.01em] text-cream leading-none">
+                7 Sisters <span className="text-accent italic">Tea Co.</span>
+              </span>
             </div>
           ) : (
-            <span className="text-xl tracking-tight text-cream group-hover:text-accent transition-colors">7 Sisters Tea Co.</span>
+            /* No logo — text branding only */
+            <div className="flex flex-col items-start">
+              <span className="font-heading text-[20px] md:text-[23px] tracking-[0.01em] text-cream leading-none">
+                7 Sisters <span className="text-accent italic">Tea Co.</span>
+              </span>
+            </div>
           )}
         </Link>
         
@@ -131,12 +145,7 @@ export default function SiteHeader({
           <Link href="/contact" className="hover:text-cream transition-colors">Contact</Link>
           
           {user ? (
-            <>
-              <Link href="/account" className="hover:text-cream transition-colors">Account</Link>
-              <form action={signOutUser} className="inline-block">
-                <button type="submit" className="text-accent hover:text-accent/80 transition-colors uppercase tracking-[0.25em]">Logout</button>
-              </form>
-            </>
+            <Link href="/account" className="hover:text-cream transition-colors">Account</Link>
           ) : (
             <>
               <Link href="/login" className="hover:text-cream transition-colors">Login</Link>
@@ -150,8 +159,8 @@ export default function SiteHeader({
           </Link>
         </nav>
 
-        <div className="flex items-center gap-3">
-          <Link href="/cart" className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/5 text-cream/70 transition hover:border-accent/60 md:hidden group">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link href="/cart" className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/5 text-cream/70 transition hover:border-accent/60 md:hidden group">
             <BagIcon className="h-5 w-5 group-hover:text-accent transition-colors" />
             <span className="absolute -right-1 -top-1 font-mono text-[9px] bg-accent text-ink h-4 w-4 rounded-full flex items-center justify-center font-bold">
               <CartCount />
@@ -160,9 +169,21 @@ export default function SiteHeader({
           <Link href="/products" className="hidden rounded-full border border-accent/60 px-6 py-2.5 text-[10px] uppercase tracking-[0.25em] text-accent transition hover:bg-accent hover:text-ink md:inline-flex font-bold">
             Shop Now
           </Link>
+          {user && (
+            <form action={signOutUser} className="hidden md:inline-block">
+              <button
+                type="submit"
+                title="Sign out"
+                aria-label="Sign out"
+                className="h-10 w-10 inline-flex items-center justify-center rounded-full border border-white/8 text-cream/30 hover:border-red-500/25 hover:text-red-400 hover:bg-red-500/5 transition-all duration-200"
+              >
+                <LogoutIcon className="h-4 w-4" />
+              </button>
+            </form>
+          )}
           <button
             type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/5 text-cream/70 md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/5 text-cream/70 md:hidden"
             onClick={() => setIsOpen(true)}
           >
             <span className="sr-only">Open menu</span>
@@ -202,7 +223,7 @@ export default function SiteHeader({
                    <div className="text-[10px] uppercase font-bold tracking-[0.4em] text-cream/70">Navigation</div>
                    <button 
                      onClick={() => setIsOpen(false)}
-                     className="h-10 w-10 flex items-center justify-center rounded-full border border-white/5 text-cream/40 hover:text-cream transition-all"
+                     className="h-11 w-11 flex items-center justify-center rounded-full border border-white/5 text-cream/40 hover:text-cream transition-all"
                    >
                      <XIcon />
                    </button>

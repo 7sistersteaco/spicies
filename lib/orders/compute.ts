@@ -13,7 +13,9 @@ type ProductRecord = {
   id: string;
   name: string;
   slug?: string;
-  variants: VariantRecord[];
+  inventory_status?: string;
+  variants?: (VariantRecord & { stock_qty?: number; stockQty?: number })[];
+  product_variants?: (VariantRecord & { stock_qty?: number; stockQty?: number })[];
 };
 
 export type ComputedItem = {
@@ -41,13 +43,22 @@ export const computeOrderItems = (products: ProductRecord[], items: CheckoutItem
     if (!product) {
       throw new Error('Invalid product.');
     }
-    const variant = product.variants.find((entry) => String(entry.id) === item.variantId);
+    const variantsList = product.product_variants ?? product.variants ?? [];
+    const variant = variantsList.find((entry) => String(entry.id) === item.variantId);
     if (!variant) {
       throw new Error('Invalid variant.');
     }
     const price = Number(variant.price_inr ?? variant.priceInr ?? 0);
     if (price <= 0) {
       throw new Error('Invalid price.');
+    }
+
+    // Stock validation
+    const stock = Number(variant.stock_qty ?? variant.stockQty ?? 0);
+    const isPreorder = product.inventory_status === 'prebook_only';
+    
+    if (!isPreorder && stock < item.quantity) {
+      throw new Error(`Only ${stock} units available for ${product.name} (${variant.weight_label ?? variant.weightLabel ?? 'Standard'}).`);
     }
     const variantLabel = String(variant.weight_label ?? variant.weightLabel ?? '');
     const variantSku = String(variant.sku ?? '');

@@ -6,17 +6,26 @@ export type OrderFilters = {
   payment_status?: string;
   date_from?: string;
   date_to?: string;
+  page?: number;
+  pageSize?: number;
 };
 
-export const getOrders = async (filters: OrderFilters) => {
+export const getOrders = async (filters: OrderFilters): Promise<{ data: any[]; count: number }> => {
+  const { page = 1, pageSize = 20 } = filters;
+  const offset = (page - 1) * pageSize;
+
   const supabase = createAdminClient();
   let query = supabase
     .from('orders')
-    .select('id, order_code, customer_name, customer_phone, customer_email, status, payment_status, total_inr, created_at')
-    .order('created_at', { ascending: false });
+    .select('id, order_code, customer_name, customer_phone, customer_email, status, payment_status, total_inr, created_at, order_type', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(offset, offset + pageSize - 1);
 
   if (filters.status) {
     query = query.eq('status', filters.status);
+  } else {
+    // Default: exclude archived orders unless status is explicitly requested
+    query = query.neq('status', 'archived');
   }
   if (filters.payment_status) {
     query = query.eq('payment_status', filters.payment_status);
@@ -33,8 +42,8 @@ export const getOrders = async (filters: OrderFilters) => {
     query = query.lte('created_at', filters.date_to);
   }
 
-  const { data } = await query;
-  return data ?? [];
+  const { data, count } = await query;
+  return { data: data ?? [], count: count ?? 0 };
 };
 
 export const getOrderById = async (id: string) => {

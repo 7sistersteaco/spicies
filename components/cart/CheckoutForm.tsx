@@ -39,7 +39,7 @@ const CheckoutForm = forwardRef<HTMLFormElement, CheckoutFormProps>(({ errors },
   }, [pincode]);
 
   return (
-    <form ref={ref} className="space-y-6">
+    <form ref={ref} className="space-y-6 pb-12">
       <div className="grid gap-4 md:grid-cols-2">
         <Input 
           id="full_name" 

@@ -54,7 +54,7 @@ export const useCartStore = create<CartState>()(
           weightLabel: variant.weightLabel,
           priceInr: variant.priceInr,
           qty: Math.min(qty, variant.stockQty || 99),
-          image: product.images[0]?.url ?? ''
+          image: product.image_url || (product.product_images?.[0]?.image_url ?? '')
         };
         set({ items: [...items, nextItem] });
       },

@@ -55,10 +55,16 @@ export async function submitPrebook(
     // 0. Fetch Product Price if Pay Now is selected
     let totalInr = 0;
     if (paymentMode === 'pay_now') {
-      const { data: product } = await supabase.from('products').select('variants').eq('name', productName).single();
-      const variant = product?.variants?.find((v: any) => v.weight_label === selectedWeight);
+      const { data: product } = await supabase
+        .from('products')
+        .select('id, product_variants(*)')
+        .eq('name', productName)
+        .single();
+        
+      const variants = product?.product_variants || (product as any)?.variants || [];
+      const variant = variants.find((v: any) => (v.label || v.weight_label) === selectedWeight);
       if (variant) {
-        totalInr = variant.price_inr * quantity;
+        totalInr = (variant.price_inr || variant.priceInr || 0) * quantity;
       }
     }
 
@@ -132,9 +138,18 @@ export async function submitPrebook(
       status: 'new'
     });
 
+    // 5. Admin Notification
+    const { createAdminNotification } = await import('@/lib/notifications/queries');
+    await createAdminNotification({
+      type: 'new_prebook',
+      reference_id: order.id,
+      title: 'New Pre-order Request',
+      message: `${fullName} requested ${quantity}x ${productName} (${selectedWeight})`
+    });
+
     return { ok: true, message, whatsappUrl, razoOrder: razoOrderData };
   } catch (err) {
     console.error('Prebook submission exception:', err);
-    return { ok: false, errors: { form: 'Unable to submit reservation. Please try again.' } };
+    return { ok: false, errors: { form: 'Unable to submit pre-order. Please try again.' } };
   }
 }

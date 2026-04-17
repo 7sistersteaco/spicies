@@ -4,7 +4,7 @@ export const categories: Category[] = [
   {
     slug: 'tea',
     name: 'Tea',
-    description: 'Strong Assam CTC for the perfect daily chai.',
+    description: 'Robust Assam CTC crafted for your daily ritual.',
     image: {
       url: '/images/tea-hero.svg',
       alt: 'Assam tea cup illustration'
@@ -13,7 +13,7 @@ export const categories: Category[] = [
   {
     slug: 'spices',
     name: 'Spices',
-    description: 'Essential blends and single spices with real aroma.',
+    description: 'Essential single-origin spices and aromatic blends.',
     image: {
       url: '/images/spice-hero.svg',
       alt: 'Assam spice bowl illustration'
@@ -21,91 +21,51 @@ export const categories: Category[] = [
   }
 ];
 
+// RE-ENGINEERED: Simplified single-variant model to match Admin capability
+// This ensures pricing consistency (e.g. ₹199 instead of ₹199 - ₹1,499)
+
 const teaVariants = [
   {
-    id: 'ctc-100',
-    sku: '7S-CTC-100G',
-    weightLabel: '100g',
-    weightGrams: 100,
+    id: 'ctc-standard',
+    productId: '7-sisters-premium-ctc',
+    isActive: true,
+    sort_order: 1,
+    sku: '7S-CTC-STD',
+    weightLabel: 'Standard Pack',
+    weightGrams: 250,
     priceInr: 199,
-    compareAtInr: 229,
+    compareAtInr: 249,
     stockQty: 48
-  },
-  {
-    id: 'ctc-200',
-    sku: '7S-CTC-200G',
-    weightLabel: '200g',
-    weightGrams: 200,
-    priceInr: 349,
-    compareAtInr: 399,
-    stockQty: 42
-  },
-  {
-    id: 'ctc-1000',
-    sku: '7S-CTC-1KG',
-    weightLabel: '1kg',
-    weightGrams: 1000,
-    priceInr: 1499,
-    compareAtInr: 1699,
-    stockQty: 18
   }
 ];
 
 const premiumLeafVariants = [
   {
-    id: 'leaf-100',
-    sku: '7S-LEAF-100G',
-    weightLabel: '100g',
-    weightGrams: 100,
+    id: 'leaf-standard',
+    productId: '7-sisters-premium-leaf',
+    isActive: true,
+    sort_order: 1,
+    sku: '7S-LEAF-STD',
+    weightLabel: 'Standard Pack',
+    weightGrams: 250,
     priceInr: 249,
-    compareAtInr: 279,
+    compareAtInr: 299,
     stockQty: 36
-  },
-  {
-    id: 'leaf-200',
-    sku: '7S-LEAF-200G',
-    weightLabel: '200g',
-    weightGrams: 200,
-    priceInr: 449,
-    compareAtInr: 499,
-    stockQty: 28
-  },
-  {
-    id: 'leaf-1000',
-    sku: '7S-LEAF-1KG',
-    weightLabel: '1kg',
-    weightGrams: 1000,
-    priceInr: 1699,
-    compareAtInr: 1899,
-    stockQty: 12
   }
 ];
 
-const spiceVariants = (prefix: string, base100: number, base200: number, base1kg: number) => [
+const spiceVariants = (prefix: string, basePrice: number, productId: string) => [
   {
-    id: `${prefix}-100`,
-    sku: `7S-${prefix.toUpperCase()}-100G`,
-    weightLabel: '100g',
-    weightGrams: 100,
-    priceInr: base100,
-    stockQty: 64
-  },
-  {
-    id: `${prefix}-200`,
-    sku: `7S-${prefix.toUpperCase()}-200G`,
-    weightLabel: '200g',
+    id: `${prefix}-standard`,
+    productId,
+    isActive: true,
+    sort_order: 1,
+    sku: `7S-${prefix.toUpperCase()}-STD`,
+    weightLabel: 'Standard Pack',
     weightGrams: 200,
-    priceInr: base200,
-    stockQty: 48
-  },
-  {
-    id: `${prefix}-1000`,
-    sku: `7S-${prefix.toUpperCase()}-1KG`,
-    weightLabel: '1kg',
-    weightGrams: 1000,
-    priceInr: base1kg,
-    stockQty: 20
-  }
+    priceInr: basePrice,
+    stockQty: 50
+  } as any
 ];
 
 export const products: Product[] = [
@@ -120,13 +80,16 @@ export const products: Product[] = [
     origin: 'Barpeta Road, Assam',
     tags: ['strong', 'daily-use', 'premium', 'assam', 'malty'],
     featuredRank: 1,
-    images: [
+    product_images: [
       {
-        url: '/images/product-ctc.svg',
-        alt: 'Assam Strong CTC Tea pack'
+        id: 'local-ctc-1',
+        productId: 'assam-strong-ctc',
+        image_url: '/images/product-ctc.svg',
+        sort_order: 0,
+        is_primary: true
       }
     ],
-    variants: teaVariants,
+    variants: teaVariants as any,
     attributes: {
       highlightTitle: 'Strength & Aroma',
       highlightBody:
@@ -147,13 +110,13 @@ export const products: Product[] = [
     origin: 'Barpeta Road, Assam',
     tags: ['premium', 'assam', 'aromatic', 'daily-use'],
     featuredRank: 3,
-    images: [
+    product_images: [
       {
         url: '/images/product-ctc.svg',
         alt: 'Assam premium leaf tea pack'
       }
-    ],
-    variants: premiumLeafVariants,
+    ] as any,
+    variants: premiumLeafVariants as any,
     attributes: {
       highlightTitle: 'Aroma & Refinement',
       highlightBody: 'Whole-leaf Assam crafted for a smooth, aromatic daily cup.',
@@ -167,18 +130,18 @@ export const products: Product[] = [
     slug: 'turmeric-powder',
     name: 'Assam Turmeric Powder',
     category: 'spices',
-    shortDescription: 'Golden, fragrant, and kitchen-ready.',
-    description: 'Golden, fragrant turmeric that lifts everyday cooking with warm, earthy depth.',
+    shortDescription: 'Golden, fragrant, and culinary grade.',
+    description: 'Golden, fragrant turmeric that elevates everyday cooking with warm, earthy depth.',
     origin: 'Assam, India',
     tags: ['fresh', 'aromatic', 'premium', 'daily-use'],
     featuredRank: 2,
-    images: [
+    product_images: [
       {
         url: '/images/product-turmeric.svg',
         alt: 'Assam turmeric powder pack'
       }
-    ],
-    variants: spiceVariants('tur', 89, 159, 599),
+    ] as any,
+    variants: spiceVariants('tur', 89, 'assam-turmeric'),
     attributes: {
       highlightTitle: 'Freshness & Aroma',
       highlightBody: 'Kitchen staples with vibrant aroma - blended for real cooking, not just shelf appeal.',
@@ -196,13 +159,13 @@ export const products: Product[] = [
     origin: 'North India',
     tags: ['balanced-heat', 'daily-use', 'premium', 'aromatic'],
     featuredRank: 4,
-    images: [
+    product_images: [
       {
         url: '/images/product-chilli.svg',
         alt: 'Kashmiri chilli powder pack'
       }
-    ],
-    variants: spiceVariants('chi', 129, 229, 799),
+    ] as any,
+    variants: spiceVariants('chi', 129, 'kashmiri-chilli'),
     attributes: {
       highlightTitle: 'Freshness & Aroma',
       highlightBody: 'Balanced heat with vibrant color - ideal for everyday gravies and marinades.',
@@ -215,18 +178,18 @@ export const products: Product[] = [
     slug: 'garam-masala',
     name: 'Garam Masala',
     category: 'spices',
-    shortDescription: 'Warm, layered, and restaurant-worthy.',
-    description: 'A warm, layered blend that brings restaurant-style depth to home kitchens.',
-    origin: 'Assam-inspired blend',
+    shortDescription: 'Warm, layered, and professional grade.',
+    description: 'A warm, layered blend that brings professional-standard depth to home kitchens.',
+    origin: 'Assamese-crafted blend',
     tags: ['premium', 'aromatic', 'blend', 'restaurant-tested'],
     featuredRank: 5,
-    images: [
+    product_images: [
       {
         url: '/images/product-garam.svg',
         alt: 'Garam masala pack'
       }
-    ],
-    variants: spiceVariants('gar', 149, 269, 899),
+    ] as any,
+    variants: spiceVariants('gar', 149, 'garam-masala'),
     attributes: {
       highlightTitle: 'Freshness & Aroma',
       highlightBody: 'Warm, layered spices crafted for real kitchens and restaurant-level depth.',
@@ -244,13 +207,13 @@ export const products: Product[] = [
     origin: 'Barpeta Road, Assam',
     tags: ['regional', 'authentic', 'daily-use', 'premium'],
     featuredRank: 6,
-    images: [
+    product_images: [
       {
         url: '/images/product-blend.svg',
         alt: 'Assam regional blend pack'
       }
-    ],
-    variants: spiceVariants('arb', 119, 219, 749),
+    ] as any,
+    variants: spiceVariants('arb', 119, 'assam-regional-blend'),
     attributes: {
       highlightTitle: 'Freshness & Aroma',
       highlightBody: 'Homestyle spice balance from Assam, crafted for everyday cooking rituals.',

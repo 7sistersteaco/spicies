@@ -113,8 +113,7 @@ export default function PrebookForm({ product, variant = 'card' }: { product: Pr
     <div className={wrapperClass}>
       {/* ... (Header logic) */}
       <div className="space-y-2">
-        <p className="text-xs uppercase tracking-[0.3em] text-cream/70">Reserve First Batch</p>
-        <p className="text-sm text-cream/70">Testing demand for our first release.</p>
+        <p className="text-xs uppercase tracking-[0.3em] text-cream/70">Pre-order Now</p>
       </div>
 
       {state.ok && !state.razoOrder ? (
@@ -124,10 +123,10 @@ export default function PrebookForm({ product, variant = 'card' }: { product: Pr
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
            </div>
-           <p className="text-xs uppercase tracking-[0.4em] text-cream/40">Reservation Saved</p>
+           <p className="text-xs uppercase tracking-[0.4em] text-cream/40">Pre-order Recorded</p>
            <h3 className="mt-4 text-2xl font-semibold">Ready to Confirm</h3>
            <p className="mt-4 text-sm text-cream/70 leading-relaxed max-w-xs mx-auto">
-             Your reservation is safely stored. To prioritize your booking, please open WhatsApp to finalize with our team.
+             Your pre-order is securely recorded. Final confirmation continues on WhatsApp.
            </p>
            <div className="mt-10 space-y-4">
              {state.whatsappUrl && (
@@ -142,7 +141,7 @@ export default function PrebookForm({ product, variant = 'card' }: { product: Pr
                 className="w-full py-4 text-xs tracking-widest uppercase opacity-50 hover:opacity-100"
                 onClick={() => window.location.reload()}
               >
-                Start New Reservation
+                Start New Pre-order
               </Button>
            </div>
          </div>
@@ -158,7 +157,7 @@ export default function PrebookForm({ product, variant = 'card' }: { product: Pr
 
           <div className="bg-cream/5 border border-white/5 p-4 rounded-xl mb-6">
             <p className="text-[10px] text-cream/40 uppercase tracking-widest leading-relaxed">
-               Next Step: After saving, we will open WhatsApp so you can instantly confirm your reservation with our team.
+               Next Step: After submitting, you will be redirected to WhatsApp to confirm your pre-order with our team.
             </p>
           </div>
 
@@ -223,7 +222,7 @@ export default function PrebookForm({ product, variant = 'card' }: { product: Pr
           <TextArea
             id="pre_note"
             name="note"
-            label="Reservation Notes (Optional)"
+            label="Order Notes (Optional)"
             placeholder="Any special requests or details..."
           />
 
@@ -235,7 +234,7 @@ export default function PrebookForm({ product, variant = 'card' }: { product: Pr
                   onClick={() => setPaymentMode('reserve')}
                   className={`rounded-xl border p-4 text-center transition-all ${paymentMode === 'reserve' ? 'border-accent bg-accent/10 text-accent' : 'border-white/20 text-cream/70'}`}
                 >
-                  <p className="text-sm font-semibold">Reserve Only</p>
+                  <p className="text-sm font-semibold">Pre-order Only</p>
                   <p className="text-[10px] uppercase tracking-wider">Pay Later</p>
                 </button>
                 <button
@@ -256,11 +255,11 @@ export default function PrebookForm({ product, variant = 'card' }: { product: Pr
               loading={isProcessing}
               disabled={isProcessing}
             >
-              {paymentMode === 'pay_now' ? 'Reserve & Pay (₹' + (activeVariant.priceInr * quantity) + ')' : 'Reserve Your Pack'}
+              {paymentMode === 'pay_now' ? 'Pre-order & Pay (₹' + (activeVariant.priceInr * quantity) + ')' : 'Pre-order Now'}
             </Button>
             <p className="mt-3 text-[10px] text-center text-cream/40 uppercase tracking-widest leading-relaxed">
-              Your details are securely saved in our system first. <br/>
-              WhatsApp confirmation follows on the next step.
+              Your pre-order is securely recorded. <br/>
+              Final confirmation continues on WhatsApp.
             </p>
           </div>
           {errorMsg && <p className="text-xs text-accent text-center">{errorMsg}</p>}

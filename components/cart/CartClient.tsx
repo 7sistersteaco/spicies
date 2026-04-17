@@ -1,3 +1,5 @@
+'use client';
+
 import CartItem from '@/components/cart/CartItem';
 import CartSummary from '@/components/cart/CheckoutSummary';
 import { useCartStore } from '@/store/cart';

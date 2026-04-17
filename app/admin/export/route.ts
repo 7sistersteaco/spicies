@@ -1,8 +1,5 @@
-import { cookies } from 'next/headers';
+import { isAdmin as checkAdmin } from '@/app/actions/admin';
 import { createAdminClient } from '@/lib/supabase/admin';
-
-const ADMIN_COOKIE = 'admin_session';
-
 const escapeCsv = (value: unknown) => {
   if (value === null || value === undefined) {
     return '';
@@ -15,8 +12,8 @@ const escapeCsv = (value: unknown) => {
 };
 
 export async function GET() {
-  const isAdmin = cookies().get(ADMIN_COOKIE)?.value === '1';
-  if (!isAdmin) {
+  const isAuthorized = await checkAdmin();
+  if (!isAuthorized) {
     return new Response('Unauthorized', { status: 401 });
   }
 

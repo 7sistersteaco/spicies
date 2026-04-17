@@ -185,3 +185,36 @@ export async function updateProfile(_prevState: any, formData: FormData) {
   revalidatePath('/account');
   return { ok: true, message: 'Profile updated successfully.' };
 }
+
+/**
+ * Update Email with verification logic
+ */
+export async function updateEmail(newEmail: string) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'Unauthorized' };
+
+  const { error } = await supabase.auth.updateUser({ email: newEmail });
+  
+  if (error) return { ok: false, error: error.message };
+  
+  return { ok: true, message: 'Verification link sent to both old and new email addresses.' };
+}
+
+/**
+ * Update Password
+ */
+export async function updatePassword(formData: FormData) {
+  const password = String(formData.get('password') ?? '').trim();
+  const confirm = String(formData.get('confirm') ?? '').trim();
+
+  if (!password || password.length < 6) return { ok: false, error: 'Min 6 characters required.' };
+  if (password !== confirm) return { ok: false, error: 'Passwords do not match.' };
+
+  const supabase = createClient();
+  const { error } = await supabase.auth.updateUser({ password });
+
+  if (error) return { ok: false, error: error.message };
+
+  return { ok: true, message: 'Password updated successfully!' };
+}

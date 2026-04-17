@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { ensureInvoice } from '@/lib/invoices/createInvoice';
-
-const ADMIN_COOKIE = 'admin_session';
+import { isAdmin } from '@/app/actions/admin';
 
 export const runtime = 'nodejs';
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const supabase = createAdminClient();
-  const url = new URL(request.url);
-  const token = url.searchParams.get('token');
+  
+  // 1. Fetch invoice first
   const { data: invoice } = await supabase
     .from('invoices')
     .select('id, pdf_path, invoice_code, order_id')
@@ -21,16 +19,26 @@ export async function GET(request: Request, { params }: { params: { id: string }
     return NextResponse.json({ ok: false, error: 'Invoice not found.' }, { status: 404 });
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
-  const isAdminSession = user?.app_metadata?.role === 'admin';
+  // 2. Security Check (Admin or Valid Public Token)
+  const isAuthorizedAdmin = await isAdmin();
+  
+  if (!isAuthorizedAdmin) {
+    const url = new URL(request.url);
+    const token = url.searchParams.get('token');
+    
+    // Check if order has this public token
+    const { data: order } = await supabase
+      .from('orders')
+      .select('public_token')
+      .eq('id', invoice.order_id)
+      .maybeSingle();
 
-  if (!isAdminSession) {
-    const { data: order } = await supabase.from('orders').select('public_token').eq('id', invoice.order_id).maybeSingle();
     if (!order || !token || order.public_token !== token) {
-      return NextResponse.json({ ok: false, error: 'Unauthorized scan or link.' }, { status: 401 });
+      return NextResponse.json({ ok: false, error: 'Unauthorized.' }, { status: 401 });
     }
   }
 
+  // 3. Ensure PDF exists
   let pdfPath = invoice.pdf_path;
   if (!pdfPath) {
     const created = await ensureInvoice(invoice.order_id);
@@ -41,6 +49,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
     return NextResponse.json({ ok: false, error: 'Invoice not available.' }, { status: 404 });
   }
 
+  // 4. Download and Stream
   const { data, error } = await supabase.storage.from('invoices').download(pdfPath);
   if (error || !data) {
     return NextResponse.json({ ok: false, error: 'Unable to download invoice.' }, { status: 500 });

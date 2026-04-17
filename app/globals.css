@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  img, svg {
+    max-width: 100%;
+    height: auto;
+    overflow: hidden;
+  }
+}
+
 :root {
   color-scheme: dark;
   --color-accent: #d4af37;
@@ -47,7 +55,7 @@
   }
 
   input, select, textarea {
-    @apply rounded-xl border bg-cream/90 text-sm text-ink px-4 py-3 placeholder:text-ink/40 focus:border-accent focus:outline-none transition-all duration-200 shadow-sm;
+    @apply rounded-xl border bg-white/5 text-sm text-cream px-4 py-3 placeholder:text-cream/30 focus:border-accent focus:outline-none transition-all duration-200 shadow-sm;
     border-color: rgb(var(--color-border-rgb) / var(--color-border-opacity));
   }
 
@@ -108,9 +116,10 @@
   .text-cream { color: var(--color-text); }
   .text-cream\/80 { color: rgb(var(--color-text-rgb) / 0.8); }
   .text-cream\/70 { color: rgb(var(--color-text-rgb) / 0.7); }
-  .text-cream\/60 { color: rgb(var(--color-text-rgb) / 0.6); }
-  .text-cream\/50 { color: rgb(var(--color-text-rgb) / 0.5); }
-  .text-cream\/40 { color: rgb(var(--color-text-rgb) / 0.4); }
+  .text-cream\/60 { color: rgb(var(--color-text-rgb) / 0.65); }
+  .text-cream\/50 { color: rgb(var(--color-text-rgb) / 0.55); }
+  .text-cream\/40 { color: rgb(var(--color-text-rgb) / 0.48); }
+  .text-cream\/30 { color: rgb(var(--color-text-rgb) / 0.4); }
 
   .text-ink { color: var(--color-text); }
 
@@ -124,4 +133,21 @@
   .border-accent\/40 { border-color: rgb(var(--color-accent-rgb) / 0.4); }
   .border-accent\/60 { border-color: rgb(var(--color-accent-rgb) / 0.6); }
   .border-accent\/70 { border-color: rgb(var(--color-accent-rgb) / 0.7); }
+
+  .lux-skeleton {
+    @apply h-full w-full rounded-xl;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.03) 75%
+    );
+    background-size: 200% 100%;
+    animation: lux-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes lux-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

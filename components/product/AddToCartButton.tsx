@@ -18,7 +18,7 @@ export default function AddToCartButton({
   variant,
   qty = 1,
   className,
-  label = 'Add to Kitchen'
+  label = 'Add to Cart'
 }: AddToCartButtonProps) {
   const addItem = useCartStore((state) => state.addItem);
   const [added, setAdded] = useState(false);

@@ -13,7 +13,7 @@ export default async function FeaturedProducts() {
           <div className="flex items-end justify-between gap-6">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-cream/50">Featured</p>
-              <h2 className="text-3xl font-semibold md:text-4xl">Kitchen Classics, Assam-First</h2>
+              <h2 className="text-3xl font-heading font-semibold md:text-4xl">Kitchen Classics, Assam-First</h2>
             </div>
             <div className="hidden md:block">
               <p className="text-sm text-cream/60">Crafted &amp; served at 7 Sisters Restro</p>

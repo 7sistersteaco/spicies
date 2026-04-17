@@ -1,74 +1,117 @@
-import Container from '@/components/layout/Container';
-import Section from '@/components/layout/Section';
 import { getProductsSafe } from '@/lib/products/data';
-import { isAdmin } from '@/app/actions/admin';
+import type { Product } from '@/lib/products/types';
 import Button from '@/components/ui/Button';
-import Image from 'next/image';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { Package, Plus, ExternalLink } from 'lucide-react';
+import SafeImage from '@/components/ui/SafeImage';
+import { getProductFallbackImage } from '@/lib/products/visuals';
+import { isValidImageUrl } from '@/lib/utils';
+import EmptyState from '@/components/admin/EmptyState';
 
 export const metadata = {
   title: 'Admin | Products',
   description: 'Manage product images and details.'
 };
 
-export default async function AdminProductsPage() {
-  const isAuthorized = await isAdmin();
-  if (!isAuthorized) redirect('/admin');
+function ProductCard({ product }: { product: Product }) {
+  const uploadedImgs = product.product_images || [];
+  const primaryUploaded =
+    uploadedImgs.find((img) => img.is_primary)?.image_url ||
+    uploadedImgs[0]?.image_url;
+  const premiumFallback = getProductFallbackImage(product.category, product.slug);
+  const hasValidImage = isValidImageUrl(primaryUploaded);
+  const displayImg = hasValidImage ? (primaryUploaded as string) : premiumFallback;
 
+  return (
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/5 bg-white/[0.02] transition-all hover:bg-white/[0.04] hover:border-accent/20">
+      <div className="relative aspect-[4/3] w-full bg-ink/40 overflow-hidden">
+        <SafeImage
+          src={displayImg}
+          fallback={premiumFallback}
+          alt={product.name}
+          fill
+          className="object-contain p-6 transition-transform duration-500 group-hover:scale-110"
+        />
+        {!hasValidImage && (
+          <div className="absolute top-3 left-3 rounded-md bg-accent/20 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-accent backdrop-blur-sm border border-accent/20">
+            Fallback UI
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-1 flex-col p-5">
+        <div className="mb-4 space-y-1">
+          <div className="flex items-start justify-between">
+            <h3 className="font-semibold text-sm text-cream leading-tight">{product.name}</h3>
+            <span
+              className={`flex-shrink-0 h-1.5 w-1.5 rounded-full mt-1.5 ${
+                product.is_active
+                  ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]'
+                  : 'bg-cream/20'
+              }`}
+            />
+          </div>
+          <p className="text-[10px] uppercase tracking-widest text-cream/30 font-medium">
+            {product.category}
+          </p>
+        </div>
+
+        <div className="mt-auto flex items-center gap-2">
+          <Button
+            href={`/admin/products/${product.id}`}
+            variant="outline"
+            className="flex-1 h-10 text-[10px] uppercase tracking-widest border-white/5 hover:bg-white/5 hover:border-accent/40 transition-all font-semibold"
+          >
+            Edit Assets
+          </Button>
+          <Link
+            href={`/products/${product.category.toLowerCase()}/${product.slug}`}
+            target="_blank"
+            className="p-2.5 rounded-xl border border-white/5 bg-white/5 text-cream/40 hover:text-cream hover:bg-white/10 transition-all"
+          >
+            <ExternalLink size={14} />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default async function AdminProductsPage() {
   const products = await getProductsSafe();
 
   return (
-    <Section className="pt-12">
-      <Container>
-        <div className="space-y-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.4em] text-cream/50">Admin</p>
-              <h1 className="text-3xl font-semibold md:text-4xl">Product Management</h1>
-              <p className="text-sm text-cream/60">Upload and manage product imagery.</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <a href="/admin" className="text-xs uppercase tracking-[0.2em] text-cream/40 hover:text-cream">Back to Dashboard</a>
-              <Button variant="secondary" disabled>Add Product (Disabled)</Button>
-            </div>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => (
-              <div key={product.id} className="lux-surface group flex flex-col overflow-hidden transition hover:border-accent/40">
-                <div className="relative aspect-square w-full bg-ink/50">
-                  <Image
-                    src={product.image_url || product.images[0]?.url || '/images/product-ctc.svg'}
-                    alt={product.name}
-                    fill
-                    className="object-contain p-8 transition-transform duration-500 group-hover:scale-105"
-                  />
-                  {!product.image_url && (
-                    <div className="absolute top-4 left-4 rounded-full bg-accent/20 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent backdrop-blur-sm">
-                      Using Fallback SVG
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-1 flex-col p-6">
-                  <div className="mb-4 space-y-1">
-                    <h3 className="font-semibold text-lg text-cream">{product.name}</h3>
-                    <p className="text-xs uppercase tracking-[0.15em] text-cream/40">{product.category}</p>
-                  </div>
-                  <div className="mt-auto flex items-center justify-between">
-                    <span className={`text-[10px] uppercase tracking-widest ${product.is_active ? 'text-green-400' : 'text-cream/30'}`}>
-                      {product.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                    <Link href={`/admin/products/${product.id}`}>
-                      <Button variant="outline" size="sm" className="h-9 border-accent/30 hover:bg-accent/10">Manage Image</Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-700">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-cream">Product Management</h1>
+          <p className="text-xs text-cream/50">Manage your catalog, inventory and imagery.</p>
         </div>
-      </Container>
-    </Section>
+
+        <div className="flex items-center gap-2">
+          <Link href="/admin/products/new">
+            <Button variant="secondary" className="gap-2 h-10 text-[10px] uppercase tracking-widest">
+              <Plus size={14} /> New Product
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      {products.length === 0 ? (
+        <EmptyState
+          icon={Package}
+          title="No Products Found"
+          description="Your product catalog is currently empty. Add products to start selling."
+          actionLabel="Create Product"
+          onAction={() => {}}
+        />
+      ) : (
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

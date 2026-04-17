@@ -17,16 +17,24 @@ export type PrebookQueryFilters = {
   status?: string;
   fulfillment_method?: string;
   query?: string;
+  page?: number;
+  pageSize?: number;
 };
 
 export const getPrebookRequests = async (
   filters: PrebookQueryFilters = {}
-): Promise<{ data: PrebookRequestRow[]; error?: string }> => {
+): Promise<{ data: PrebookRequestRow[]; error?: string; totalCount?: number }> => {
+  const { page = 1, pageSize = 20 } = filters;
+  const offset = (page - 1) * pageSize;
+
   const supabase = createAdminClient();
+  
+  // Base request for data
   let request = supabase
     .from('prebook_requests')
-    .select('id,full_name,phone,product_name,selected_weight,quantity,fulfillment_method,status,created_at')
-    .order('created_at', { ascending: false });
+    .select('id,full_name,phone,product_name,selected_weight,quantity,fulfillment_method,status,created_at', { count: 'exact' })
+    .order('created_at', { ascending: false })
+    .range(offset, offset + pageSize - 1);
 
   if (filters.status && filters.status !== 'all') {
     request = request.eq('status', filters.status);
@@ -43,13 +51,13 @@ export const getPrebookRequests = async (
     }
   }
 
-  const { data, error } = await request;
+  const { data, error, count } = await request;
 
   if (error || !data) {
     return { data: [], error: 'Unable to load pre-book requests.' };
   }
 
-  return { data: data as PrebookRequestRow[] };
+  return { data: data as PrebookRequestRow[], totalCount: count ?? 0 };
 };
 
 export const updatePrebookStatus = async (id: string, status: PrebookStatus) => {

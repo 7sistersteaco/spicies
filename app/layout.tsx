@@ -1,16 +1,12 @@
 import type { Metadata, Viewport } from 'next';
 import { Playfair_Display, Poppins } from 'next/font/google';
 import './globals.css';
-import SiteHeader from '@/components/layout/SiteHeader';
-import SiteFooter from '@/components/layout/SiteFooter';
-import ServiceWorkerRegister from '@/components/layout/ServiceWorkerRegister';
-import { baseMetadata } from '@/lib/seo/metadata';
-import { organizationJsonLd } from '@/lib/seo/jsonld';
-import { createClient } from '@/lib/supabase/server';
 import ProgressBar from '@/components/ui/ProgressBar';
 import { Suspense } from 'react';
 import { ToastProvider } from '@/components/ui/Toast';
 import { getBrandingSettings } from '@/app/actions/branding';
+import { baseMetadata } from '@/lib/seo/metadata';
+import { getOrganizationJsonLd } from '@/lib/seo/jsonld';
 
 const headingFont = Playfair_Display({
   subsets: ['latin'],
@@ -43,9 +39,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const supabase = createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const branding = await getBrandingSettings();
+  const settings = await getBrandingSettings();
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -61,14 +55,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <Suspense fallback={null}>
             <ProgressBar />
           </Suspense>
-          <ServiceWorkerRegister />
-          <SiteHeader user={user} branding={branding} />
-          <main>{children}</main>
-          <SiteFooter />
+          <div className="flex flex-col min-h-screen">
+            {children}
+          </div>
         </ToastProvider>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(getOrganizationJsonLd(settings)) }}
         />
       </body>
     </html>

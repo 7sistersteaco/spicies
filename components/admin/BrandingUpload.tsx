@@ -3,12 +3,13 @@
 import { useState, useRef } from 'react';
 import Button from '@/components/ui/Button';
 import Image from 'next/image';
-import { updateBrandingLogo, updateBrandingFavicon, removeBrandingAsset } from '@/app/actions/branding';
+import { updateBrandingLogo, updateBrandingFavicon, updateBrandingHero, updateBrandingBanner, updateBrandingRestro, updateBrandingAbout, updateBrandingFssaiCert, removeBrandingAsset } from '@/app/actions/branding';
 import ImageEditor from './ImageEditor';
 import { Upload, X, Check, Image as ImageIcon, Globe } from 'lucide-react';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 type BrandingUploadProps = {
-  type: 'logo' | 'favicon';
+  type: 'logo' | 'favicon' | 'hero' | 'banner' | 'restro' | 'about' | 'fssai_certificate';
   currentUrl: string | null;
   fallbackUrl: string;
 };
@@ -18,21 +19,46 @@ export default function BrandingUpload({ type, currentUrl, fallbackUrl }: Brandi
   const [error, setError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const isFavicon = type === 'favicon';
-  const label = isFavicon ? 'Favicon' : 'Website Logo';
-  const description = isFavicon 
-    ? 'Ideal: 32x32 or 48x48. PNG, ICO, or WEBP allowed (Max 512KB).' 
-    : 'Luxurious high-res logo. PNG, WEBP, or SVG allowed (Max 2MB).';
+  const labelMap = {
+    logo: 'Website Logo',
+    favicon: 'Favicon',
+    hero: 'Global Hero Image',
+    banner: 'Global Banner Image',
+    restro: 'Restro Story Image',
+    about: 'About Page Image',
+    fssai_certificate: 'FSSAI Certificate'
+  };
+  const label = labelMap[type];
+  const descriptionMap = {
+    favicon: 'Ideal: 32x32 or 48x48. PNG, ICO, or WEBP (Max 512KB).',
+    logo: 'Luxurious high-res logo. PNG, WEBP, or SVG (Max 2MB).',
+    hero: 'Main homepage visual. Preferred: 16:9 aspect ratio (Max 4MB).',
+    banner: 'Marketing banner background. Wide format (Max 3MB).',
+    restro: '"From Restro to Home" section photo. Portrait or square preferred (Max 4MB).',
+    about: 'About page hero image. Portrait or landscape (Max 4MB).',
+    fssai_certificate: 'FSSAI Registration Certificate. PNG, JPG, or PDF-as-image (Max 4MB).'
+  };
+  const description = descriptionMap[type];
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const maxSize = isFavicon ? 512 * 1024 : 2 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setError(`File is too large. Max ${isFavicon ? '512KB' : '2MB'} allowed.`);
+    const maxSizeMap: Record<string, number> = {
+      favicon: 512 * 1024,
+      logo: 2 * 1024 * 1024,
+      hero: 4 * 1024 * 1024,
+      banner: 3 * 1024 * 1024,
+      about: 3 * 1024 * 1024,
+      restro: 3 * 1024 * 1024,
+      fssai_certificate: 4 * 1024 * 1024
+    };
+    if (file.size > maxSizeMap[type]) {
+      setError(`File is too large. Max ${maxSizeMap[type] / (1024 * 1024)}MB allowed.`);
       return;
     }
 
@@ -66,10 +92,20 @@ export default function BrandingUpload({ type, currentUrl, fallbackUrl }: Brandi
 
     try {
       const formData = new FormData();
-      const file = new File([croppedBlob], `logo-${Date.now()}.webp`, { type: 'image/webp' });
-      formData.append('logo', file);
+      const file = new File([croppedBlob], `${type}-${Date.now()}.webp`, { type: 'image/webp' });
+      formData.append(type, file);
 
-      const result = await updateBrandingLogo(formData);
+      const result = type === 'logo'
+        ? await updateBrandingLogo(formData)
+        : type === 'hero'
+        ? await updateBrandingHero(formData)
+        : type === 'restro'
+        ? await updateBrandingRestro(formData)
+        : type === 'about'
+        ? await updateBrandingAbout(formData)
+        : type === 'fssai_certificate'
+        ? await updateBrandingFssaiCert(formData)
+        : await updateBrandingBanner(formData);
       
       if (!result.ok) {
         setError(result.error || 'Upload failed');
@@ -95,8 +131,6 @@ export default function BrandingUpload({ type, currentUrl, fallbackUrl }: Brandi
   }
 
   async function handleRemove() {
-    if (!confirm(`Are you sure you want to remove the custom ${type}?`)) return;
-    
     setStatus('uploading');
     const result = await removeBrandingAsset(type);
     if (!result.ok) {
@@ -107,10 +141,19 @@ export default function BrandingUpload({ type, currentUrl, fallbackUrl }: Brandi
 
   return (
     <div className="lux-surface p-8 space-y-8">
+      <ConfirmDialog
+        isOpen={isRemoveDialogOpen}
+        onClose={() => setIsRemoveDialogOpen(false)}
+        onConfirm={handleRemove}
+        title={`Remove Custom ${label}`}
+        description={`Are you sure you want to remove the custom ${type}? This will fallback to the original default asset.`}
+        confirmLabel="Remove"
+        variant="danger"
+      />
       <div className="flex flex-col md:flex-row gap-8 items-start">
         {/* Preview Area */}
         <div className="relative group">
-          <div className={`relative ${isFavicon ? 'h-16 w-16' : 'h-32 w-64'} overflow-hidden rounded-xl bg-ink/50 border border-white/5 flex items-center justify-center p-4 transition-all group-hover:border-accent/30`}>
+          <div className={`relative ${isFavicon ? 'h-16 w-16' : type === 'hero' ? 'h-48 w-80' : 'h-32 w-64'} overflow-hidden rounded-xl bg-ink/50 border border-white/5 flex items-center justify-center p-4 transition-all group-hover:border-accent/30`}>
             <Image
               src={currentUrl || fallbackUrl}
               alt={`${label} preview`}
@@ -128,7 +171,7 @@ export default function BrandingUpload({ type, currentUrl, fallbackUrl }: Brandi
           </div>
           {currentUrl && (
             <button 
-              onClick={handleRemove}
+              onClick={() => setIsRemoveDialogOpen(true)}
               className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors"
               title="Remove custom asset"
             >
@@ -185,7 +228,6 @@ export default function BrandingUpload({ type, currentUrl, fallbackUrl }: Brandi
           imageFile={selectedFile}
           onSave={handleCropComplete}
           onCancel={handleCancel}
-          aspect={isFavicon ? 1 : 0} // Aspect 0 allows free-form for logo if needed, or I can set a specific one
         />
       )}
     </div>

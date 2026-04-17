@@ -14,19 +14,25 @@ export type ProductTag =
   | 'blend'
   | 'authentic';
 
+export type ProductImage = {
+  id: string;
+  productId: string;
+  image_url: string;
+  sort_order: number;
+  is_primary: boolean;
+};
+
 export type ProductVariant = {
   id: string;
-  sku: string;
+  productId: string;
   weightLabel: string;
-  weightGrams: number;
+  weightGrams?: number;
   priceInr: number;
   compareAtInr?: number;
   stockQty: number;
-};
-
-export type ProductImage = {
-  url: string;
-  alt: string;
+  sku: string;
+  isActive: boolean;
+  sort_order: number;
 };
 
 export type Product = {
@@ -39,10 +45,11 @@ export type Product = {
   origin: string;
   tags: ProductTag[];
   featuredRank?: number;
-  images: ProductImage[];
+  product_images: ProductImage[];
   variants: ProductVariant[];
   image_url?: string | null;
   is_active?: boolean;
+  category_id?: string;
   inventoryStatus?: 'in_stock' | 'out_of_stock' | 'prebook_only';
   attributes: {
     highlightTitle: string;
@@ -54,8 +61,12 @@ export type Product = {
 };
 
 export type Category = {
+  id?: string;
   slug: CategorySlug;
   name: string;
   description: string;
-  image: ProductImage;
+  image: {
+    url: string;
+    alt: string;
+  };
 };

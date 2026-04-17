@@ -1,14 +1,19 @@
 'use client';
 
-import { ButtonHTMLAttributes } from 'react';
+import { ButtonHTMLAttributes, AnchorHTMLAttributes } from 'react';
 import { cx } from '@/lib/utils';
 import { useFormStatus } from 'react-dom';
+import Link from 'next/link';
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type BaseProps = {
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
+  href?: string;
 };
+
+type ButtonProps = BaseProps & ButtonHTMLAttributes<HTMLButtonElement>;
+type AnchorProps = BaseProps & AnchorHTMLAttributes<HTMLAnchorElement>;
 
 export default function Button({ 
   variant = 'primary', 
@@ -16,9 +21,10 @@ export default function Button({
   className, 
   loading, 
   disabled, 
+  href,
   children, 
   ...props 
-}: ButtonProps) {
+}: any) { // Using any safely here to handle polymorphic props
   const { pending } = useFormStatus();
   const isPending = pending || loading;
 
@@ -38,12 +44,10 @@ export default function Button({
     lg: 'px-8 py-4 min-h-[52px]'
   };
 
-  return (
-    <button 
-      className={cx(base, variants[variant], sizes[size], className)} 
-      disabled={isPending || disabled}
-      {...props}
-    >
+  const combinedClassName = cx(base, variants[variant as keyof typeof variants], sizes[size as keyof typeof sizes], className);
+
+  const content = (
+    <>
       {isPending ? (
         <span className="flex items-center gap-2">
           <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
@@ -53,6 +57,28 @@ export default function Button({
           Processing...
         </span>
       ) : children}
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link 
+        href={href} 
+        className={combinedClassName}
+        {...(props as AnchorProps)}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button 
+      className={combinedClassName} 
+      disabled={isPending || disabled}
+      {...(props as ButtonProps)}
+    >
+      {content}
     </button>
   );
 }

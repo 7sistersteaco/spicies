@@ -4,6 +4,8 @@ import Container from '@/components/layout/Container';
 import Section from '@/components/layout/Section';
 import Reveal from '@/components/motion/Reveal';
 import { getCategoriesSafe } from '@/lib/products/data';
+import SafeImage from '@/components/ui/SafeImage';
+import { isValidImageUrl } from '@/lib/utils';
 
 export default async function CategoriesPreview() {
   const categories = await getCategoriesSafe();
@@ -14,7 +16,7 @@ export default async function CategoriesPreview() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.4em] text-cream/50">Shop by Category</p>
-              <h2 className="text-3xl font-semibold md:text-4xl">Tea &amp; Spices</h2>
+              <h2 className="text-3xl font-heading font-semibold md:text-4xl">Tea &amp; Spices</h2>
             </div>
           </div>
         </Reveal>
@@ -32,14 +34,22 @@ export default async function CategoriesPreview() {
                       {category.description}
                     </h3>
                   </div>
-                  <div className="relative mt-2 h-36 md:h-48 w-full flex items-center justify-center bg-black/5 rounded-2xl overflow-hidden">
+                  <div className="relative mt-2 h-36 md:h-48 w-full flex items-center justify-center bg-white/[0.03] rounded-2xl overflow-hidden">
                     <div className="relative h-28 w-4/5 md:h-full md:w-full">
-                      <Image 
-                        src={category.image.url} 
-                        alt={category.image.alt} 
-                        fill
-                        className="object-contain transition-transform duration-500 group-hover:scale-105" 
-                      />
+                      {(() => {
+                        const premiumFallback = category.slug === 'tea' ? '/images/tea-hero.svg' : '/images/spice-hero.svg';
+                        const displayImg = isValidImageUrl(category.image.url) ? category.image.url : premiumFallback;
+                        
+                        return (
+                          <SafeImage 
+                            src={displayImg} 
+                            fallback={premiumFallback}
+                            alt={category.image.alt} 
+                            fill
+                            className="object-contain transition-transform duration-500 group-hover:scale-105" 
+                          />
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
