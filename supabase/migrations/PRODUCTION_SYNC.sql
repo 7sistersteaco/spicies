@@ -77,26 +77,31 @@ CREATE TABLE IF NOT EXISTS public.product_variants (
 
 -- 2. Migrate existing variants from JSONB to rows
 -- We handle both camelCase (from code) and snake_case (from init seed) keys
-INSERT INTO public.product_variants (
-  product_id, 
-  label, 
-  sku, 
-  weight_grams, 
-  price_inr, 
-  compare_at_inr, 
-  stock_qty, 
-  is_active
-)
-SELECT 
-  p.id as product_id,
-  COALESCE(v->>'weight_label', v->>'weightLabel', 'Standard') as label,
-  v->>'sku' as sku,
-  COALESCE((v->>'weight_grams')::int, (v->>'weightGrams')::int, 0) as weight_grams,
-  COALESCE((v->>'price_inr')::int, (v->>'priceInr')::int, 0) as price_inr,
-  COALESCE((v->>'compare_at_inr')::int, (v->>'compareAtInr')::int) as compare_at_inr,
-  COALESCE((v->>'stock_qty')::int, (v->>'stockQty')::int, 0) as stock_qty,
-  COALESCE((v->>'is_active')::boolean, (v->>'isActive')::boolean, true) as is_active
-FROM public.products p, jsonb_array_elements(p.variants) v;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'products' AND column_name = 'variants') THEN
+    INSERT INTO public.product_variants (
+      product_id, 
+      label, 
+      sku, 
+      weight_grams, 
+      price_inr, 
+      compare_at_inr, 
+      stock_qty, 
+      is_active
+    )
+    SELECT 
+      p.id as product_id,
+      COALESCE(v->>'weight_label', v->>'weightLabel', 'Standard') as label,
+      v->>'sku' as sku,
+      COALESCE((v->>'weight_grams')::int, (v->>'weightGrams')::int, 0) as weight_grams,
+      COALESCE((v->>'price_inr')::int, (v->>'priceInr')::int, 0) as price_inr,
+      COALESCE((v->>'compare_at_inr')::int, (v->>'compareAtInr')::int) as compare_at_inr,
+      COALESCE((v->>'stock_qty')::int, (v->>'stockQty')::int, 0) as stock_qty,
+      COALESCE((v->>'is_active')::boolean, (v->>'isActive')::boolean, true) as is_active
+    FROM public.products p, jsonb_array_elements(p.variants) v;
+  END IF;
+END $$;
 
 -- 3. Cleanup: Remove the deprecated JSON column
 ALTER TABLE public.products DROP COLUMN IF EXISTS variants;
@@ -140,26 +145,36 @@ CREATE TABLE IF NOT EXISTS public.product_images (
 );
 
 -- 3. Data Migration: Move existing image data to the new table
--- Primary image from products.image_url
-INSERT INTO public.product_images (product_id, image_url, sort_order, is_primary)
-SELECT 
-  id as product_id,
-  image_url,
-  0 as sort_order,
-  true as is_primary
-FROM public.products
-WHERE image_url IS NOT NULL;
+DO $$
+BEGIN
+  -- Primary image from products.image_url
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'products' AND column_name = 'image_url') THEN
+    INSERT INTO public.product_images (product_id, image_url, sort_order, is_primary)
+    SELECT 
+      id as product_id,
+      image_url,
+      0 as sort_order,
+      true as is_primary
+    FROM public.products
+    WHERE image_url IS NOT NULL;
+  END IF;
 
--- Secondary images from products.images JSONB (if any remained)
-INSERT INTO public.product_images (product_id, image_url, sort_order, is_primary)
-SELECT 
-  p.id as product_id,
-  v->>'url' as image_url,
-  (row_number() OVER (PARTITION BY p.id ORDER BY v->>'url')) + 1 as sort_order,
-  false as is_primary
-FROM public.products p, jsonb_array_elements(p.images) v
-WHERE v->>'url' IS NOT NULL 
-AND v->>'url' <> p.image_url;
+  -- Secondary images from products.images JSONB (if any remained)
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'products' AND column_name = 'images') THEN
+    INSERT INTO public.product_images (product_id, image_url, sort_order, is_primary)
+    SELECT 
+      p.id as product_id,
+      v->>'url' as image_url,
+      (row_number() OVER (PARTITION BY p.id ORDER BY v->>'url')) + 1 as sort_order,
+      false as is_primary
+    FROM public.products p, jsonb_array_elements(p.images) v
+    WHERE v->>'url' IS NOT NULL 
+    AND (
+      NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'products' AND column_name = 'image_url')
+      OR v->>'url' <> p.image_url
+    );
+  END IF;
+END $$;
 
 -- 4. Cleanup: Remove deprecated image columns from products table
 ALTER TABLE public.products DROP COLUMN IF EXISTS images;
