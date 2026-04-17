@@ -47,6 +47,7 @@ CREATE POLICY "Public read product images"
 ON public.product_images FOR SELECT 
 USING (true);
 
+DROP POLICY IF EXISTS "Admin full access product images" ON public.product_images;
 CREATE POLICY "Admin full access product images" 
 ON public.product_images FOR ALL 
 USING (auth.role() = 'service_role')

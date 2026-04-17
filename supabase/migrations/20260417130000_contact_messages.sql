@@ -15,17 +15,20 @@ CREATE TABLE IF NOT EXISTS public.contact_messages (
 ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
 
 -- Allow public inserts (contact form)
+DROP POLICY IF EXISTS "allow_public_insert_contact_messages" ON public.contact_messages;
 CREATE POLICY "allow_public_insert_contact_messages"
   ON public.contact_messages FOR INSERT
   WITH CHECK (true);
 
 -- Only authenticated admins can select / update
+DROP POLICY IF EXISTS "allow_admin_select_contact_messages" ON public.contact_messages;
 CREATE POLICY "allow_admin_select_contact_messages"
   ON public.contact_messages FOR SELECT
   USING (
     (auth.jwt() -> 'app_metadata' ->> 'role') = 'admin'
   );
 
+DROP POLICY IF EXISTS "allow_admin_update_contact_messages" ON public.contact_messages;
 CREATE POLICY "allow_admin_update_contact_messages"
   ON public.contact_messages FOR UPDATE
   USING (

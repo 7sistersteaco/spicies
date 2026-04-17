@@ -51,11 +51,13 @@ FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 ALTER TABLE public.product_variants ENABLE ROW LEVEL SECURITY;
 
 -- Anonymous users can read active variants
+DROP POLICY IF EXISTS "Public read active variants" ON public.product_variants;
 CREATE POLICY "Public read active variants" 
 ON public.product_variants FOR SELECT 
 USING (is_active = true);
 
 -- Service role (Admin) has full access
+DROP POLICY IF EXISTS "Admin full access variants" ON public.product_variants;
 CREATE POLICY "Admin full access variants" 
 ON public.product_variants FOR ALL 
 USING (auth.role() = 'service_role')
